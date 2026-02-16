@@ -19,12 +19,14 @@ ENV SHELL=/bin/zsh
 ENV EDITOR=nano
 ENV VISUAL=nano
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 COPY scripts/install-base.sh /tmp/
 RUN bash /tmp/install-base.sh && rm /tmp/install-base.sh
 
 USER node
 
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
+RUN sh -c "$(wget -q -O- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
   -p git -p fzf \
   -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
@@ -50,15 +52,15 @@ ARG TFLINT_VERSION
 ARG CHECKOV_VERSION
 ARG TERRAFORM_DOCS_VERSION
 
-RUN ARCH=$(dpkg --print-architecture) && \
-  wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}.0/terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+RUN ARCH="$(dpkg --print-architecture)" && \
+  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}.0/terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
   unzip "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
   mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
   chmod +x /usr/local/bin/terraform
 
-RUN ARCH=$(dpkg --print-architecture) && \
+RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}.0/tflint_linux_${ARCH_NAME}.zip" && \
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}.0/tflint_linux_${ARCH_NAME}.zip" && \
   unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
   rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
 
@@ -66,9 +68,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
   && apt-get clean && rm -rf /var/lib/apt/lists/* && \
   pip3 install --no-cache-dir checkov==${CHECKOV_VERSION}.* --break-system-packages
 
-RUN ARCH=$(dpkg --print-architecture) && \
+RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}.0/terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}.0/terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
   tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
   mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
   chmod +x /usr/local/bin/terraform-docs

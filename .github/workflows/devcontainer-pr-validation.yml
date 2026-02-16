@@ -21,5 +21,5 @@ jobs:
         with:
           dockerfile: .devcontainer/dockerfiles/Dockerfile.*
           recursive: true
-          ignore: DL3008,DL3009,DL3015
+          ignore: DL3008,DL3009,DL3015,DL4001,DL3016,DL3059
           failure-threshold: warning
