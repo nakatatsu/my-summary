@@ -34,7 +34,6 @@
         "anthropic.claude-code",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        // "eamodio.gitlens",  // Disabled: too heavy for DevContainer
         "hashicorp.terraform",
         "golang.go"
       ],

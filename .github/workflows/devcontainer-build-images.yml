@@ -8,8 +8,9 @@ on:
     branches:
       - main
       - create-devcontainer
-    paths:
-      - '.devcontainer/**'
+    # テストのため一時的にコメントアウト
+    # paths:
+    #   - '.devcontainer/**'
 
 permissions:
   contents: read
