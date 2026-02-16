@@ -1,0 +1,91 @@
+# DevContainer Backend Image
+# Self-contained multi-stage build for CI/CD backend tasks
+
+# Stage 1: Base
+ARG NODE_VERSION
+FROM node:${NODE_VERSION} AS base
+
+ARG CLAUDE_CODE_VERSION
+ARG AWS_CLI_VERSION
+ARG GIT_DELTA_VERSION
+ARG ZSH_IN_DOCKER_VERSION
+ARG TZ=UTC
+
+ENV TZ="$TZ"
+ENV DEVCONTAINER=true
+ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
+ENV PATH=$PATH:/usr/local/share/npm-global/bin
+ENV SHELL=/bin/zsh
+ENV EDITOR=nano
+ENV VISUAL=nano
+
+COPY scripts/install-base.sh /tmp/
+RUN bash /tmp/install-base.sh && rm /tmp/install-base.sh
+
+USER node
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN sh -c "$(wget -qO- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
+  -p git -p fzf \
+  -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
+  -a "source /usr/share/doc/fzf/examples/completion.zsh" \
+  -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+  -x
+
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+
+COPY scripts/init-firewall.sh /usr/local/bin/
+USER root
+RUN chmod +x /usr/local/bin/init-firewall.sh && \
+  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
+  chmod 0440 /etc/sudoers.d/node-firewall
+USER node
+
+# Stage 2: Backend
+FROM base AS backend
+
+USER root
+
+ARG GO_VERSION
+ARG GOFUMPT_VERSION
+ARG GOIMPORTS_VERSION
+ARG GOLANGCI_LINT_VERSION
+ARG GOVULNCHECK_VERSION
+ARG OSV_SCANNER_VERSION
+ARG GOSEC_VERSION
+
+RUN ARCH=$(dpkg --print-architecture) && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://go.dev/dl/go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
+  rm "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz"
+
+ENV PATH=$PATH:/usr/local/go/bin
+ENV GOPATH=/home/node/go
+ENV PATH=$PATH:/home/node/go/bin
+
+RUN mkdir -p /home/node/go/bin && chown -R node:node /home/node/go
+
+USER node
+
+RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION}
+RUN go install golang.org/x/tools/cmd/goimports@v${GOIMPORTS_VERSION}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}.0
+RUN go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION}
+RUN go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
+
+USER root
+
+RUN ARCH=$(dpkg --print-architecture) && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}.0/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  chmod +x /usr/local/bin/osv-scanner
+
+USER node
+WORKDIR /workspace
+
+LABEL org.opencontainers.image.source="https://github.com/nakatatsu/mynote"
+LABEL org.opencontainers.image.description="DevContainer Backend Image"
+LABEL maintainer="nakatatsu"

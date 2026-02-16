@@ -1,0 +1,81 @@
+{
+  "name": "DevContainer Local Development",
+  "build": {
+    "dockerfile": "dockerfiles/Dockerfile.local",
+    "context": ".",
+    "args": {
+      "TZ": "${localEnv:TZ:UTC}",
+      "NODE_VERSION": "24.13",
+      "CLAUDE_CODE_VERSION": "2.1",
+      "AWS_CLI_VERSION": "2.33",
+      "TERRAFORM_VERSION": "1.14",
+      "TFLINT_VERSION": "0.61",
+      "CHECKOV_VERSION": "3.2",
+      "TERRAFORM_DOCS_VERSION": "0.21",
+      "GO_VERSION": "1.26",
+      "GOFUMPT_VERSION": "0.9",
+      "GOIMPORTS_VERSION": "0.42",
+      "GOLANGCI_LINT_VERSION": "2.9",
+      "GOVULNCHECK_VERSION": "1.1",
+      "OSV_SCANNER_VERSION": "2.3",
+      "GOSEC_VERSION": "2.23",
+      "NEXTJS_VERSION": "16.1",
+      "GIT_DELTA_VERSION": "0.18.2",
+      "ZSH_IN_DOCKER_VERSION": "1.2.1"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "hashicorp.terraform",
+        "golang.go"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        },
+        "[terraform]": {
+          "editor.defaultFormatter": "hashicorp.terraform",
+          "editor.formatOnSave": true
+        },
+        "[go]": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=devcontainer-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=devcontainer-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand"
+}

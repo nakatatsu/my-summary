@@ -1,0 +1,129 @@
+# DevContainer Local Development Image
+# Self-contained multi-stage build with all tools for local development
+
+# Stage 1: Base
+ARG NODE_VERSION
+FROM node:${NODE_VERSION} AS base
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG CLAUDE_CODE_VERSION
+ARG AWS_CLI_VERSION
+ARG GIT_DELTA_VERSION
+ARG ZSH_IN_DOCKER_VERSION
+ARG TZ=UTC
+
+ENV TZ="$TZ"
+ENV DEVCONTAINER=true
+ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
+ENV PATH=$PATH:/usr/local/share/npm-global/bin
+ENV SHELL=/bin/zsh
+ENV EDITOR=nano
+ENV VISUAL=nano
+
+COPY scripts/install-base.sh /tmp/
+RUN bash /tmp/install-base.sh && rm /tmp/install-base.sh
+
+USER node
+
+RUN sh -c "$(wget -qO- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
+  -p git -p fzf \
+  -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
+  -a "source /usr/share/doc/fzf/examples/completion.zsh" \
+  -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+  -x
+
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+
+COPY scripts/init-firewall.sh /usr/local/bin/
+USER root
+RUN chmod +x /usr/local/bin/init-firewall.sh && \
+  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
+  chmod 0440 /etc/sudoers.d/node-firewall
+USER node
+
+# Stage 2: Local (All Tools)
+FROM base AS local
+
+USER root
+
+ARG TERRAFORM_VERSION
+ARG TFLINT_VERSION
+ARG CHECKOV_VERSION
+ARG TERRAFORM_DOCS_VERSION
+ARG GO_VERSION
+ARG GOFUMPT_VERSION
+ARG GOIMPORTS_VERSION
+ARG GOLANGCI_LINT_VERSION
+ARG GOVULNCHECK_VERSION
+ARG OSV_SCANNER_VERSION
+ARG GOSEC_VERSION
+ARG NEXTJS_VERSION
+
+# Terraform
+RUN ARCH="$(dpkg --print-architecture)" && \
+  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}.0/terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+  unzip "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+  chmod +x /usr/local/bin/terraform
+
+# tflint
+RUN ARCH="$(dpkg --print-architecture)" && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}.0/tflint_linux_${ARCH_NAME}.zip" && \
+  unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
+  rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
+
+# checkov
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* && \
+  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION}.* --break-system-packages
+
+# terraform-docs
+RUN ARCH="$(dpkg --print-architecture)" && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}.0/terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  chmod +x /usr/local/bin/terraform-docs
+
+# Go
+RUN ARCH="$(dpkg --print-architecture)" && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://go.dev/dl/go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
+  rm "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz"
+
+ENV PATH=$PATH:/usr/local/go/bin
+ENV GOPATH=/home/node/go
+ENV PATH=$PATH:/home/node/go/bin
+
+RUN mkdir -p /home/node/go/bin && chown -R node:node /home/node/go
+
+USER node
+
+RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION} && \
+  go install golang.org/x/tools/cmd/goimports@v${GOIMPORTS_VERSION} && \
+  go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION} && \
+  go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}.0
+
+USER root
+
+RUN ARCH="$(dpkg --print-architecture)" && \
+  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}.0/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  chmod +x /usr/local/bin/osv-scanner
+
+USER node
+
+RUN npm install -g next@${NEXTJS_VERSION} react@latest react-dom@latest typescript eslint prettier
+
+WORKDIR /workspace
+
+LABEL org.opencontainers.image.source="https://github.com/nakatatsu/mynote"
+LABEL org.opencontainers.image.description="DevContainer Local Development Image"
+LABEL maintainer="nakatatsu"
