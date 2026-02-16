@@ -33,7 +33,8 @@ RUN sh -c "$(wget -q -O- https://github.com/deluan/zsh-in-docker/releases/downlo
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   -x
 
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+RUN curl -fsSL https://claude.ai/install.sh | bash -s ${CLAUDE_CODE_VERSION}
+ENV DISABLE_AUTOUPDATER=1
 
 COPY scripts/init-firewall.sh /usr/local/bin/
 USER root
