@@ -11,4 +11,4 @@ This repository contains development documents and sample code.
 * Ask `claude-code-guide` to create SKILLS, sub-agents, and research Claude Code features.
 * Never work directly on the `main` branch. Of course, never commit to `main`.
 * Never skip any steps in the user’s instructions.
-* Always follow issue-driven development. Document your work in a GitHub issue for each task. If no issue exists, create one.
+* Always follow issue-driven development. Document your work in a GitHub issue for each task. If no issue exists, create one. Add issue number when creating PRs.
