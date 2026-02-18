@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repository contains development documents and sample code.
+This repository focuses on the development system for AI-driven development. So it contains development documents and sample code.
 
 ## Important
 
