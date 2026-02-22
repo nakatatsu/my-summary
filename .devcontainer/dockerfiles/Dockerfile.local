@@ -31,6 +31,7 @@ RUN sh -c "$(wget -qO- https://github.com/deluan/zsh-in-docker/releases/download
   -a "source /usr/share/doc/fzf/examples/key-bindings.zsh" \
   -a "source /usr/share/doc/fzf/examples/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+  -a "alias yolo='claude --dangerously-skip-permissions'" \
   -x
 
 RUN curl -fsSL https://claude.ai/install.sh | bash -s ${CLAUDE_CODE_VERSION}
@@ -42,6 +43,8 @@ RUN chmod +x /usr/local/bin/init-firewall.sh && \
   echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
   chmod 0440 /etc/sudoers.d/node-firewall
 USER node
+
+ENV PATH="/home/node/.local/bin:${PATH}"
 
 # Stage 2: Local (All Tools)
 FROM base AS local

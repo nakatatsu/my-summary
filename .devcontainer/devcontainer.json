@@ -6,7 +6,7 @@
     "args": {
       "TZ": "${localEnv:TZ:UTC}",
       "NODE_VERSION": "24.13",
-      "CLAUDE_CODE_VERSION": "2.1",
+      "CLAUDE_CODE_VERSION": "2.1.50",
       "AWS_CLI_VERSION": "2.33",
       "TERRAFORM_VERSION": "1.14",
       "TFLINT_VERSION": "0.61",
@@ -74,8 +74,11 @@
     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
   },
+  "remoteEnv": {
+    "GH_TOKEN": "${localEnv:GITHUB_CLAUDECODE_KEY}"
+  },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "postStartCommand": "git config --global --add safe.directory /workspace && sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand"
 }
