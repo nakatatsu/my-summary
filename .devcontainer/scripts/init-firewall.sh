@@ -63,7 +63,7 @@ while read -r cidr; do
         exit 1
     fi
     echo "Adding GitHub range $cidr"
-    ipset add allowed-domains "$cidr"
+    ipset add  -exist allowed-domains "$cidr"
 done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q | sort -u)
 
 # ============================================================================
@@ -108,7 +108,7 @@ for domain in \
             exit 1
         fi
         echo "Adding $ip for $domain"
-        ipset add allowed-domains "$ip"
+        ipset add  -exist allowed-domains "$ip"
     done < <(echo "$ips")
 done
 
@@ -121,7 +121,7 @@ if [ -n "$aws_ranges" ]; then
     echo "Processing AWS IPs..."
     while read -r cidr; do
         if [[ "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
-            ipset add allowed-domains "$cidr"
+            ipset add  -exist allowed-domains "$cidr"
         fi
     done < <(echo "$aws_ranges" | jq -r '.prefixes[].ip_prefix' | sort -u | head -100)
     echo "Added AWS IP ranges (limited to first 100 for performance)"
