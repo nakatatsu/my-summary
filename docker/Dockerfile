@@ -5,7 +5,7 @@
 # ============================================================
 # Base (shared across all targets)
 # ============================================================
-FROM node:24.13 AS base
+FROM node:25.8 AS base
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
