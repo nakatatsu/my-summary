@@ -8,7 +8,8 @@ on:
     branches:
       - main
     paths:
-      - '.devcontainer/**'
+      - 'docker/**'
+      - '.devcontainer/devcontainer.json'
 
 permissions:
   contents: read
@@ -24,20 +25,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: [infrastructure, backend, frontend, local]
+        include:
+          - target: infrastructure
+            image: ci-infrastructure
+          - target: backend
+            image: ci-backend
+          - target: frontend
+            image: ci-frontend
+          - target: local
+            image: devcontainer-local
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Load versions
-        id: versions
-        run: |
-          while IFS='=' read -r key value; do
-            [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-            key_lower=$(echo "$key" | tr '[:upper:]' '[:lower:]')
-            echo "${key_lower}=${value}" >> $GITHUB_OUTPUT
-          done < .devcontainer/versions.env
-          echo "build_date=$(date -u +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+      - name: Build tag
+        id: meta
+        run: echo "build_tag=$(date -u +'%Y%m%d')-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - uses: docker/setup-buildx-action@v3
 
@@ -50,44 +53,25 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .devcontainer
-          file: .devcontainer/dockerfiles/Dockerfile.${{ matrix.image }}
+          context: docker
+          file: docker/Dockerfile
+          target: ${{ matrix.target }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:${{ steps.versions.outputs.build_date }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ steps.meta.outputs.build_tag }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:latest
           cache-to: type=inline
-          build-args: |
-            NODE_VERSION=${{ steps.versions.outputs.node_version }}
-            CLAUDE_CODE_VERSION=${{ steps.versions.outputs.claude_code_version }}
-            AWS_CLI_VERSION=${{ steps.versions.outputs.aws_cli_version }}
-            GIT_DELTA_VERSION=${{ steps.versions.outputs.git_delta_version }}
-            ZSH_IN_DOCKER_VERSION=${{ steps.versions.outputs.zsh_in_docker_version }}
-            TERRAFORM_VERSION=${{ steps.versions.outputs.terraform_version }}
-            TFLINT_VERSION=${{ steps.versions.outputs.tflint_version }}
-            TFLINT_AWS_PLUGIN_VERSION=${{ steps.versions.outputs.tflint_aws_plugin_version }}
-            CHECKOV_VERSION=${{ steps.versions.outputs.checkov_version }}
-            TERRAFORM_DOCS_VERSION=${{ steps.versions.outputs.terraform_docs_version }}
-            GO_VERSION=${{ steps.versions.outputs.go_version }}
-            GOFUMPT_VERSION=${{ steps.versions.outputs.gofumpt_version }}
-            GOIMPORTS_VERSION=${{ steps.versions.outputs.goimports_version }}
-            GOLANGCI_LINT_VERSION=${{ steps.versions.outputs.golangci_lint_version }}
-            GOVULNCHECK_VERSION=${{ steps.versions.outputs.govulncheck_version }}
-            OSV_SCANNER_VERSION=${{ steps.versions.outputs.osv_scanner_version }}
-            GOSEC_VERSION=${{ steps.versions.outputs.gosec_version }}
-            NEXTJS_VERSION=${{ steps.versions.outputs.nextjs_version }}
-            CODEX_VERSION=${{ steps.versions.outputs.codex_version }}
 
       - name: Security scan
         uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
+          image-ref: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:latest
           format: sarif
           output: trivy-results.sarif
 
       - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
-          category: devcontainer-${{ matrix.image }}
+          category: ${{ matrix.image }}
