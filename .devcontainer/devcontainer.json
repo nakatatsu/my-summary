@@ -1,30 +1,9 @@
 {
   "name": "DevContainer Local Development",
   "build": {
-    "dockerfile": "dockerfiles/Dockerfile.local",
-    "context": ".",
-    "args": {
-      "TZ": "${localEnv:TZ:UTC}",
-      "NODE_VERSION": "24.13",
-      "CLAUDE_CODE_VERSION": "2.1.50",
-      "AWS_CLI_VERSION": "2.33",
-      "TERRAFORM_VERSION": "1.14",
-      "TFLINT_VERSION": "0.61",
-      "CHECKOV_VERSION": "3.2",
-      "TERRAFORM_DOCS_VERSION": "0.21",
-      "GO_VERSION": "1.26",
-      "GOFUMPT_VERSION": "0.9",
-      "GOIMPORTS_VERSION": "0.42",
-      "GOLANGCI_LINT_VERSION": "2.9",
-      "GOVULNCHECK_VERSION": "1.1",
-      "OSV_SCANNER_VERSION": "2.3",
-      "GOSEC_VERSION": "2.23",
-      "NEXTJS_VERSION": "16.1",
-      "CODEX_VERSION": "0.106",
-      "TFLINT_AWS_PLUGIN_VERSION": "0.45.0",
-      "GIT_DELTA_VERSION": "0.18.2",
-      "ZSH_IN_DOCKER_VERSION": "1.2.1"
-    }
+    "context": "../docker",
+    "dockerfile": "Dockerfile",
+    "target": "local"
   },
   "runArgs": [
     "--cap-add=NET_ADMIN",
@@ -73,9 +52,7 @@
     "source=devcontainer-codex-${devcontainerId},target=/home/node/.codex,type=volume"
   ],
   "containerEnv": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
-    "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+    "TZ": "${localEnv:TZ:UTC}"
   },
   "remoteEnv": {
     "GH_TOKEN": "${localEnv:GITHUB_CLAUDECODE_KEY}"
