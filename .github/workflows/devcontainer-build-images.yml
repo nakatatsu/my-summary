@@ -55,6 +55,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:${{ steps.versions.outputs.build_date }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
           cache-to: type=inline
@@ -66,6 +67,7 @@ jobs:
             ZSH_IN_DOCKER_VERSION=${{ steps.versions.outputs.zsh_in_docker_version }}
             TERRAFORM_VERSION=${{ steps.versions.outputs.terraform_version }}
             TFLINT_VERSION=${{ steps.versions.outputs.tflint_version }}
+            TFLINT_AWS_PLUGIN_VERSION=${{ steps.versions.outputs.tflint_aws_plugin_version }}
             CHECKOV_VERSION=${{ steps.versions.outputs.checkov_version }}
             TERRAFORM_DOCS_VERSION=${{ steps.versions.outputs.terraform_docs_version }}
             GO_VERSION=${{ steps.versions.outputs.go_version }}
@@ -78,7 +80,7 @@ jobs:
             NEXTJS_VERSION=${{ steps.versions.outputs.nextjs_version }}
 
       - name: Security scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.OWNER }}/devcontainer-${{ matrix.image }}:latest
           format: sarif
