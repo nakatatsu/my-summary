@@ -78,6 +78,7 @@ jobs:
             OSV_SCANNER_VERSION=${{ steps.versions.outputs.osv_scanner_version }}
             GOSEC_VERSION=${{ steps.versions.outputs.gosec_version }}
             NEXTJS_VERSION=${{ steps.versions.outputs.nextjs_version }}
+            CODEX_VERSION=${{ steps.versions.outputs.codex_version }}
 
       - name: Security scan
         uses: aquasecurity/trivy-action@0.35.0
@@ -87,7 +88,6 @@ jobs:
           output: trivy-results.sarif
 
       - uses: github/codeql-action/upload-sarif@v4
-        if: always()
         with:
           sarif_file: trivy-results.sarif
           category: devcontainer-${{ matrix.image }}
