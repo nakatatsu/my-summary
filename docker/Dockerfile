@@ -38,6 +38,10 @@ ENV TZ="$TZ" \
     GOVULNCHECK_VERSION=1.1.4 \
     OSV_SCANNER_VERSION=2.3.3 \
     GOSEC_VERSION=2.23.0 \
+    REACT_VERSION=19.2.4 \
+    TYPESCRIPT_VERSION=5.9.3 \
+    ESLINT_VERSION=10.0.3 \
+    PRETTIER_VERSION=3.8.1 \
     NEXTJS_VERSION=16.1.6 \
     CODEX_VERSION=0.106.0
 
@@ -158,9 +162,7 @@ USER node
 
 RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION}
 RUN go install golang.org/x/tools/cmd/goimports@v${GOIMPORTS_VERSION}
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}
+RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v${GOLANGCI_LINT_VERSION}
 RUN go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION}
 RUN go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
 
@@ -185,8 +187,8 @@ FROM base AS frontend
 
 USER node
 
-RUN npm install -g next@${NEXTJS_VERSION} react@latest react-dom@latest
-RUN npm install -g typescript eslint prettier
+RUN npm install -g next@${NEXTJS_VERSION} react@${REACT_VERSION} react-dom@${REACT_VERSION}
+RUN npm install -g typescript@${TYPESCRIPT_VERSION} eslint@${ESLINT_VERSION} prettier@${PRETTIER_VERSION}
 
 WORKDIR /workspace
 
@@ -256,9 +258,7 @@ RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION} && \
   go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION} && \
   go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}
+RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v${GOLANGCI_LINT_VERSION}
 
 USER root
 
@@ -271,7 +271,7 @@ USER node
 
 # --- Frontend tools ---
 
-RUN npm install -g next@${NEXTJS_VERSION} react@latest react-dom@latest typescript eslint prettier \
+RUN npm install -g next@${NEXTJS_VERSION} react@${REACT_VERSION} react-dom@${REACT_VERSION} typescript@${TYPESCRIPT_VERSION} eslint@${ESLINT_VERSION} prettier@${PRETTIER_VERSION} \
   && npm install -g @openai/codex@${CODEX_VERSION}
 
 RUN mkdir -p /home/node/.codex
