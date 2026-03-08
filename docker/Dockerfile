@@ -112,10 +112,9 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 
 # tflint
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH_NAME}.zip" && \
-  unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
-  rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH}.zip" && \
+  unzip "tflint_linux_${ARCH}.zip" && mv tflint /usr/local/bin/ && \
+  rm "tflint_linux_${ARCH}.zip" && chmod +x /usr/local/bin/tflint
 
 # checkov
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
@@ -124,10 +123,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
 
 # terraform-docs
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
-  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
-  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
+  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
+  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
   chmod +x /usr/local/bin/terraform-docs
 
 USER node
@@ -146,10 +144,9 @@ USER root
 
 # Go
 RUN ARCH=$(dpkg --print-architecture) && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
-  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
-  rm "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz"
+  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
+  rm "go${GO_VERSION}.linux-${ARCH}.tar.gz"
 
 ENV PATH=$PATH:/usr/local/go/bin
 ENV GOPATH=/home/node/go
@@ -171,8 +168,7 @@ USER root
 
 # osv-scanner
 RUN ARCH=$(dpkg --print-architecture) && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH}" -O /usr/local/bin/osv-scanner && \
   chmod +x /usr/local/bin/osv-scanner
 
 USER node
@@ -216,10 +212,9 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 
 # tflint
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH_NAME}.zip" && \
-  unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
-  rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH}.zip" && \
+  unzip "tflint_linux_${ARCH}.zip" && mv tflint /usr/local/bin/ && \
+  rm "tflint_linux_${ARCH}.zip" && chmod +x /usr/local/bin/tflint
 
 # tflint AWS plugin
 USER node
@@ -235,20 +230,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
 
 # terraform-docs
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
-  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
-  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
+  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
+  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
   chmod +x /usr/local/bin/terraform-docs
 
 # --- Backend tools ---
 
 # Go
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
-  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
-  rm "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz"
+  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
+  rm "go${GO_VERSION}.linux-${ARCH}.tar.gz"
 
 ENV PATH=$PATH:/usr/local/go/bin
 ENV GOPATH=/home/node/go
@@ -271,8 +264,7 @@ USER root
 
 # osv-scanner
 RUN ARCH="$(dpkg --print-architecture)" && \
-  if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH}" -O /usr/local/bin/osv-scanner && \
   chmod +x /usr/local/bin/osv-scanner
 
 USER node
