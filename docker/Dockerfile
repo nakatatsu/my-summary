@@ -23,23 +23,23 @@ ENV TZ="$TZ" \
     CLAUDE_CONFIG_DIR="/home/node/.claude" \
     POWERLEVEL9K_DISABLE_GITSTATUS="true" \
     CLAUDE_CODE_VERSION=2.1.50 \
-    AWS_CLI_VERSION=2.33 \
+    AWS_CLI_VERSION=2.33.31 \
     GIT_DELTA_VERSION=0.18.2 \
     ZSH_IN_DOCKER_VERSION=1.2.1 \
-    TERRAFORM_VERSION=1.14 \
-    TFLINT_VERSION=0.61 \
-    CHECKOV_VERSION=3.2 \
-    TERRAFORM_DOCS_VERSION=0.21 \
+    TERRAFORM_VERSION=1.14.6 \
+    TFLINT_VERSION=0.61.0 \
+    CHECKOV_VERSION=3.2.507 \
+    TERRAFORM_DOCS_VERSION=0.21.0 \
     TFLINT_AWS_PLUGIN_VERSION=0.45.0 \
-    GO_VERSION=1.26 \
-    GOFUMPT_VERSION=0.9 \
-    GOIMPORTS_VERSION=0.42 \
-    GOLANGCI_LINT_VERSION=2.9 \
-    GOVULNCHECK_VERSION=1.1 \
-    OSV_SCANNER_VERSION=2.3 \
-    GOSEC_VERSION=2.23 \
-    NEXTJS_VERSION=16.1 \
-    CODEX_VERSION=0.106
+    GO_VERSION=1.26.1 \
+    GOFUMPT_VERSION=0.9.2 \
+    GOIMPORTS_VERSION=0.42.0 \
+    GOLANGCI_LINT_VERSION=2.9.0 \
+    GOVULNCHECK_VERSION=1.1.4 \
+    OSV_SCANNER_VERSION=2.3.3 \
+    GOSEC_VERSION=2.23.0 \
+    NEXTJS_VERSION=16.1.6 \
+    CODEX_VERSION=0.106.0
 
 # System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -50,9 +50,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # AWS CLI
 RUN ARCH=$(uname -m) && \
   if [ "$ARCH" = "x86_64" ]; then \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.0.zip" -o "awscliv2.zip"; \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWS_CLI_VERSION}.zip" -o "awscliv2.zip"; \
   elif [ "$ARCH" = "aarch64" ]; then \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWS_CLI_VERSION}.0.zip" -o "awscliv2.zip"; \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWS_CLI_VERSION}.zip" -o "awscliv2.zip"; \
   fi && \
   unzip awscliv2.zip && ./aws/install && rm -rf aws awscliv2.zip
 
@@ -105,29 +105,29 @@ USER root
 
 # Terraform
 RUN ARCH="$(dpkg --print-architecture)" && \
-  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}.0/terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
-  unzip "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
-  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
+  unzip "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
+  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
   chmod +x /usr/local/bin/terraform
 
 # tflint
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}.0/tflint_linux_${ARCH_NAME}.zip" && \
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH_NAME}.zip" && \
   unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
   rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
 
 # checkov
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
   && apt-get clean && rm -rf /var/lib/apt/lists/* && \
-  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION}.* --break-system-packages
+  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION} --break-system-packages
 
 # terraform-docs
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}.0/terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
-  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
-  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
   chmod +x /usr/local/bin/terraform-docs
 
 USER node
@@ -147,9 +147,9 @@ USER root
 # Go
 RUN ARCH=$(dpkg --print-architecture) && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://go.dev/dl/go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
-  tar -C /usr/local -xzf "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
-  rm "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz"
+  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
+  rm "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz"
 
 ENV PATH=$PATH:/usr/local/go/bin
 ENV GOPATH=/home/node/go
@@ -163,7 +163,7 @@ RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION}
 RUN go install golang.org/x/tools/cmd/goimports@v${GOIMPORTS_VERSION}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}.0
+  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}
 RUN go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION}
 RUN go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
 
@@ -172,7 +172,7 @@ USER root
 # osv-scanner
 RUN ARCH=$(dpkg --print-architecture) && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}.0/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
   chmod +x /usr/local/bin/osv-scanner
 
 USER node
@@ -209,15 +209,15 @@ USER root
 
 # Terraform
 RUN ARCH="$(dpkg --print-architecture)" && \
-  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}.0/terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
-  unzip "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
-  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}.0_linux_${ARCH}.zip" && \
+  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
+  unzip "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
+  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
   chmod +x /usr/local/bin/terraform
 
 # tflint
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}.0/tflint_linux_${ARCH_NAME}.zip" && \
+  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH_NAME}.zip" && \
   unzip "tflint_linux_${ARCH_NAME}.zip" && mv tflint /usr/local/bin/ && \
   rm "tflint_linux_${ARCH_NAME}.zip" && chmod +x /usr/local/bin/tflint
 
@@ -231,14 +231,14 @@ USER root
 # checkov
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
   && apt-get clean && rm -rf /var/lib/apt/lists/* && \
-  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION}.* --break-system-packages
+  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION} --break-system-packages
 
 # terraform-docs
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}.0/terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
-  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
-  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}.0-linux-${ARCH_NAME}.tar.gz" && \
+  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
+  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH_NAME}.tar.gz" && \
   chmod +x /usr/local/bin/terraform-docs
 
 # --- Backend tools ---
@@ -246,9 +246,9 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 # Go
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://go.dev/dl/go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
-  tar -C /usr/local -xzf "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz" && \
-  rm "go${GO_VERSION}.0.linux-${ARCH_NAME}.tar.gz"
+  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
+  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz" && \
+  rm "go${GO_VERSION}.linux-${ARCH_NAME}.tar.gz"
 
 ENV PATH=$PATH:/usr/local/go/bin
 ENV GOPATH=/home/node/go
@@ -265,14 +265,14 @@ RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION} && \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}.0
+  sh -s -- -b "$(go env GOPATH)/bin" v${GOLANGCI_LINT_VERSION}
 
 USER root
 
 # osv-scanner
 RUN ARCH="$(dpkg --print-architecture)" && \
   if [ "$ARCH" = "amd64" ]; then ARCH_NAME="amd64"; elif [ "$ARCH" = "arm64" ]; then ARCH_NAME="arm64"; fi && \
-  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}.0/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
+  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH_NAME}" -O /usr/local/bin/osv-scanner && \
   chmod +x /usr/local/bin/osv-scanner
 
 USER node
