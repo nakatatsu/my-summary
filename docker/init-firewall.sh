@@ -45,7 +45,7 @@ ipset create allowed-domains hash:net
 # Fetch GitHub IP ranges and add them
 # ============================================================================
 echo "Fetching GitHub IP ranges..."
-gh_ranges=$(curl -s https://api.github.com/meta)
+gh_ranges=$(curl -sfS https://api.github.com/meta)
 if [ -z "$gh_ranges" ]; then
     echo "ERROR: Failed to fetch GitHub IP ranges"
     exit 1
@@ -57,6 +57,13 @@ if ! echo "$gh_ranges" | jq -e '.web and .api and .git' >/dev/null; then
 fi
 
 echo "Processing GitHub IPs..."
+gh_cidrs=$(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q | sort -u)
+if [ -z "$gh_cidrs" ]; then
+    echo "ERROR: No GitHub CIDRs found after aggregation"
+    exit 1
+fi
+
+gh_count=0
 while read -r cidr; do
     if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
         echo "ERROR: Invalid CIDR range from GitHub meta: $cidr"
@@ -64,7 +71,13 @@ while read -r cidr; do
     fi
     echo "Adding GitHub range $cidr"
     ipset add  -exist allowed-domains "$cidr"
-done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q | sort -u)
+    gh_count=$((gh_count + 1))
+done <<< "$gh_cidrs"
+if [ "$gh_count" -eq 0 ]; then
+    echo "ERROR: No GitHub IP ranges were added"
+    exit 1
+fi
+echo "Added $gh_count GitHub IP ranges"
 
 # ============================================================================
 # Resolve and add allowed domains
@@ -113,30 +126,40 @@ for domain in \
 done
 
 # ============================================================================
-# Add AWS IP ranges for *.amazonaws.com
+# Add AWS IP ranges (ap-northeast-1 only)
 # ============================================================================
 echo "Fetching AWS IP ranges..."
-aws_ranges=$(curl -s https://ip-ranges.amazonaws.com/ip-ranges.json)
+aws_ranges=$(curl -sfS https://ip-ranges.amazonaws.com/ip-ranges.json)
 if [ -z "$aws_ranges" ]; then
     echo "ERROR: Failed to fetch AWS IP ranges"
     exit 1
 fi
 
-if ! echo "$aws_ranges" | jq -e '.prefixes' >/dev/null 2>&1; then
+if ! echo "$aws_ranges" | jq -e '.prefixes' >/dev/null; then
     echo "ERROR: AWS IP ranges response missing prefixes field"
     exit 1
 fi
 
 echo "Processing AWS IPs for ap-northeast-1..."
+aws_cidrs=$(echo "$aws_ranges" | jq -r '.prefixes[] | select(.region == "ap-northeast-1") | .ip_prefix' | aggregate -q | sort -u)
+if [ -z "$aws_cidrs" ]; then
+    echo "ERROR: No ap-northeast-1 CIDRs found in AWS IP ranges"
+    exit 1
+fi
+
 aws_count=0
 while read -r cidr; do
     if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
         echo "ERROR: Invalid CIDR range from AWS IP ranges: $cidr"
         exit 1
     fi
-    ipset add -exist allowed-domains "$cidr"
+    ipset add  -exist allowed-domains "$cidr"
     aws_count=$((aws_count + 1))
-done < <(echo "$aws_ranges" | jq -r '.prefixes[] | select(.region == "ap-northeast-1") | .ip_prefix' | sort -u | aggregate -q)
+done <<< "$aws_cidrs"
+if [ "$aws_count" -eq 0 ]; then
+    echo "ERROR: No AWS IP ranges were added for ap-northeast-1"
+    exit 1
+fi
 echo "Added $aws_count AWS IP ranges for ap-northeast-1"
 
 # ============================================================================
