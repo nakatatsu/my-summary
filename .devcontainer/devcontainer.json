@@ -1,10 +1,6 @@
 {
   "name": "DevContainer Local Development",
-  "build": {
-    "context": "../docker",
-    "dockerfile": "Dockerfile",
-    "target": "local"
-  },
+  "image": "ghcr.io/nakatatsu/devcontainer-local:20260308-78f482b",
   "runArgs": [
     "--cap-add=NET_ADMIN",
     "--cap-add=NET_RAW"

@@ -73,7 +73,7 @@ done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q | sor
 # - *.anthropic.com (Claude)
 # - *.github.com (GitHub - already handled above via IP ranges)
 # - registry.terraform.io (Terraform)
-# - *.amazonaws.com (AWS)
+# - *.amazonaws.com (AWS - ap-northeast-1 via ip-ranges.json)
 # - registry.npmjs.org (npm)
 # - proxy.golang.org (Go modules)
 
@@ -117,17 +117,27 @@ done
 # ============================================================================
 echo "Fetching AWS IP ranges..."
 aws_ranges=$(curl -s https://ip-ranges.amazonaws.com/ip-ranges.json)
-if [ -n "$aws_ranges" ]; then
-    echo "Processing AWS IPs..."
-    while read -r cidr; do
-        if [[ "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
-            ipset add  -exist allowed-domains "$cidr"
-        fi
-    done < <(echo "$aws_ranges" | jq -r '.prefixes[].ip_prefix' | sort -u | head -100)
-    echo "Added AWS IP ranges (limited to first 100 for performance)"
-else
-    echo "WARNING: Failed to fetch AWS IP ranges"
+if [ -z "$aws_ranges" ]; then
+    echo "ERROR: Failed to fetch AWS IP ranges"
+    exit 1
 fi
+
+if ! echo "$aws_ranges" | jq -e '.prefixes' >/dev/null 2>&1; then
+    echo "ERROR: AWS IP ranges response missing prefixes field"
+    exit 1
+fi
+
+echo "Processing AWS IPs for ap-northeast-1..."
+aws_count=0
+while read -r cidr; do
+    if [[ ! "$cidr" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$ ]]; then
+        echo "ERROR: Invalid CIDR range from AWS IP ranges: $cidr"
+        exit 1
+    fi
+    ipset add -exist allowed-domains "$cidr"
+    aws_count=$((aws_count + 1))
+done < <(echo "$aws_ranges" | jq -r '.prefixes[] | select(.region == "ap-northeast-1") | .ip_prefix' | sort -u | aggregate -q)
+echo "Added $aws_count AWS IP ranges for ap-northeast-1"
 
 # ============================================================================
 # Get host IP from default route
