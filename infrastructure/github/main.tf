@@ -1,8 +1,16 @@
 resource "github_repository_ruleset" "main_branch_protection" {
+  for_each = var.protected_repositories
+
   name        = "main-branch-protection"
-  repository  = "mynote"
+  repository  = each.value
   target      = "branch"
   enforcement = "active"
+
+  bypass_actors {
+    actor_id    = 5 # Repository admin
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
 
   conditions {
     ref_name {

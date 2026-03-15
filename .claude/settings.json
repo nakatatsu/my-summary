@@ -1,47 +1,5 @@
 {
-  "defaultMode": "default",
-
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "slack@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "stripe@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true
-  },
-
   "permissions": {
-    "deny": [
-      "Read(~/.aws/credentials)",
-      "Read(~/.aws/config)",
-      "Read(~/.config/gh/hosts.yml)",
-      "Read(~/.config/gh/config.yml)",
-      "Edit(./.git/**)",
-      "Edit(./CLAUDE.md)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
-      "Bash(git reset --hard*)",
-      "Bash(git clean -f*)",
-      "Bash(git branch -D*)",
-      "Bash(gh repo delete*)",
-      "Bash(gh secret *)",
-      "Bash(gh api *)",
-      "Bash(sudo *)",
-      "Bash(rm *)",
-      "Bash(curl *)",
-      "Bash(wget *)",
-      "Bash(chmod *)",
-      "Bash(chown *)"
-    ],
     "allow": [
       "Read(./docs/**)",
       "Read(./scripts/**)",
@@ -123,9 +81,47 @@
       "WebFetch(domain:registry.npmjs.org)",
       "WebFetch(domain:*.npmjs.org)",
       "WebFetch(domain:proxy.golang.org)"
+    ],
+    "deny": [
+      "Read(~/.aws/credentials)",
+      "Read(~/.aws/config)",
+      "Read(~/.config/gh/hosts.yml)",
+      "Read(~/.config/gh/config.yml)",
+      "Edit(./.git/**)",
+      "Edit(./CLAUDE.md)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git branch -D*)",
+      "Bash(gh repo delete*)",
+      "Bash(gh secret *)",
+      "Bash(gh api *)",
+      "Bash(sudo *)",
+      "Bash(rm *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(chmod *)",
+      "Bash(chown *)"
     ]
   },
-
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "slack@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "stripe@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true
+  },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
@@ -143,5 +139,6 @@
         "proxy.golang.org"
       ]
     }
-  }
+  },
+  "defaultMode": "default"
 }

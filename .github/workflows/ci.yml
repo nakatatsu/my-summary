@@ -4,7 +4,24 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      devcontainer: ${{ steps.filter.outputs.devcontainer }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            devcontainer:
+              - 'docker/**'
+              - '.devcontainer/devcontainer.json'
+              - '.github/workflows/devcontainer-*.yml'
+
   devcontainer:
+    needs: [changes]
+    if: needs.changes.outputs.devcontainer == 'true'
     uses: ./.github/workflows/devcontainer-pr-validation.yml
 
   ci:
