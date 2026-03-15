@@ -85,10 +85,6 @@ RUN sh -c "$(wget -qO- https://github.com/deluan/zsh-in-docker/releases/download
   -a "alias yolo='claude --dangerously-skip-permissions'" \
   -x
 
-# Claude Code — バージョン固定すると公式プラグインマーケットプレイスのスキーマ非互換等の問題が発生するため、Latest運用とする
-RUN curl -fsSL https://claude.ai/install.sh | bash
-ENV DISABLE_AUTOUPDATER=1
-
 # Firewall
 COPY init-firewall.sh /usr/local/bin/
 USER root
@@ -274,6 +270,10 @@ RUN npm install -g next@${NEXTJS_VERSION} react@${REACT_VERSION} react-dom@${REA
   && npm install -g @openai/codex@${CODEX_VERSION}
 
 RUN mkdir -p /home/node/.codex
+
+# Claude Code — バージョン固定すると公式プラグインマーケットプレイスのスキーマ非互換等の問題が発生するため、Latest運用とする
+RUN curl -fsSL https://claude.ai/install.sh | bash
+ENV DISABLE_AUTOUPDATER=1
 
 WORKDIR /workspace
 
