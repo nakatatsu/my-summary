@@ -1,6 +1,7 @@
 name: DevContainer PR Validation
 
 on:
+  workflow_call:
   pull_request:
     paths:
       - 'docker/**'
