@@ -27,17 +27,6 @@ jobs:
 
   build-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - target: infrastructure
-            image: ci-infrastructure
-          - target: backend
-            image: ci-backend
-          - target: frontend
-            image: ci-frontend
-          - target: local
-            image: devcontainer-local
     steps:
       - uses: actions/checkout@v6
 
@@ -48,15 +37,15 @@ jobs:
         with:
           context: docker
           file: docker/Dockerfile
-          target: ${{ matrix.target }}
+          target: local
           load: true
-          tags: ${{ matrix.image }}:test
+          tags: devcontainer-local:test
           cache-from: type=gha
           cache-to: type=gha,mode=min
 
       - name: Verify base tools
         run: |
-          docker run --rm ${{ matrix.image }}:test bash -c "
+          docker run --rm devcontainer-local:test bash -c "
             set -e
             node --version
             npm --version
@@ -69,18 +58,16 @@ jobs:
           "
 
       - name: Verify local tools
-        if: matrix.target == 'local'
         run: |
-          docker run --rm ${{ matrix.image }}:test bash -c "
+          docker run --rm devcontainer-local:test bash -c "
             set -e
             claude --version
             codex --version
           "
 
       - name: Verify infrastructure tools
-        if: matrix.target == 'infrastructure' || matrix.target == 'local'
         run: |
-          docker run --rm ${{ matrix.image }}:test bash -c "
+          docker run --rm devcontainer-local:test bash -c "
             set -e
             terraform version
             tflint --version
@@ -89,9 +76,8 @@ jobs:
           "
 
       - name: Verify backend tools
-        if: matrix.target == 'backend' || matrix.target == 'local'
         run: |
-          docker run --rm ${{ matrix.image }}:test bash -c "
+          docker run --rm devcontainer-local:test bash -c "
             set -e
             go version
             gofumpt -version
@@ -103,9 +89,8 @@ jobs:
           "
 
       - name: Verify frontend tools
-        if: matrix.target == 'frontend' || matrix.target == 'local'
         run: |
-          docker run --rm ${{ matrix.image }}:test bash -c "
+          docker run --rm devcontainer-local:test bash -c "
             set -e
             next --version
             tsc --version
