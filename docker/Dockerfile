@@ -22,7 +22,6 @@ ENV TZ="$TZ" \
     NODE_OPTIONS="--max-old-space-size=4096" \
     CLAUDE_CONFIG_DIR="/home/node/.claude" \
     POWERLEVEL9K_DISABLE_GITSTATUS="true" \
-    CLAUDE_CODE_VERSION=2.1.50 \
     AWS_CLI_VERSION=2.33.31 \
     GIT_DELTA_VERSION=0.18.2 \
     ZSH_IN_DOCKER_VERSION=1.2.1 \
@@ -86,8 +85,8 @@ RUN sh -c "$(wget -qO- https://github.com/deluan/zsh-in-docker/releases/download
   -a "alias yolo='claude --dangerously-skip-permissions'" \
   -x
 
-# Claude Code
-RUN curl -fsSL https://claude.ai/install.sh | bash -s ${CLAUDE_CODE_VERSION}
+# Claude Code — バージョン固定すると公式プラグインマーケットプレイスのスキーマ非互換等の問題が発生するため、Latest運用とする
+RUN curl -fsSL https://claude.ai/install.sh | bash
 ENV DISABLE_AUTOUPDATER=1
 
 # Firewall
