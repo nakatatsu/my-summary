@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  devcontainer:
+    uses: ./.github/workflows/devcontainer-pr-validation.yml
+
+  ci:
+    runs-on: ubuntu-latest
+    needs: [devcontainer]
+    if: always()
+    steps:
+      - name: Check results
+        env:
+          DEVCONTAINER_RESULT: ${{ needs.devcontainer.result }}
+        run: |
+          if [ "$DEVCONTAINER_RESULT" = "failure" ]; then
+            echo "devcontainer validation failed"
+            exit 1
+          fi
+          echo "All checks passed"
