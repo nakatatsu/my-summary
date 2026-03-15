@@ -1,0 +1,47 @@
+services:
+  workspace:
+    image: ghcr.io/nakatatsu/devcontainer-local:20260315-070a55f
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - devcontainer-bashhistory:/commandhistory
+      - devcontainer-config:/home/node/.claude
+      - devcontainer-codex:/home/node/.codex
+      - ${LOCAL_WORKSPACE_FOLDER:-..}:/workspace:delegated
+    environment:
+      TZ: ${TZ:-UTC}
+    command: sleep infinity
+    depends_on:
+      gh-token-sidecar:
+        condition: service_healthy
+
+  gh-token-sidecar:
+    build:
+      context: ./gh-token-sidecar
+      dockerfile: Dockerfile
+    volumes:
+      - ${GH_APP_PEM_PATH}:/secrets/private-key.pem:ro
+    environment:
+      GH_APP_CLIENT_ID: ${GH_APP_CLIENT_ID}
+      GH_APP_INSTALLATION_ID: ${GH_APP_INSTALLATION_ID}
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  devcontainer-bashhistory:
+  devcontainer-config:
+  devcontainer-codex:
