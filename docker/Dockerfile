@@ -272,6 +272,7 @@ RUN npm install -g next@${NEXTJS_VERSION} react@${REACT_VERSION} react-dom@${REA
 RUN mkdir -p /home/node/.codex
 
 # Claude Code — バージョン固定すると公式プラグインマーケットプレイスのスキーマ非互換等の問題が発生するため、Latest運用とする
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -fsSL https://claude.ai/install.sh | bash
 ENV DISABLE_AUTOUPDATER=1
 

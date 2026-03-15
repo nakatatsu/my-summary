@@ -57,7 +57,6 @@ jobs:
         run: |
           docker run --rm ${{ matrix.image }}:test bash -c "
             set -e
-            claude --version
             node --version
             npm --version
             git --version
@@ -66,6 +65,15 @@ jobs:
             aws --version
             delta --version
             zsh --version
+          "
+
+      - name: Verify local tools
+        if: matrix.target == 'local'
+        run: |
+          docker run --rm ${{ matrix.image }}:test bash -c "
+            set -e
+            claude --version
+            codex --version
           "
 
       - name: Verify infrastructure tools
