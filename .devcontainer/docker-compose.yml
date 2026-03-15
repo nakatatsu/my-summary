@@ -1,6 +1,6 @@
 services:
   workspace:
-    image: ghcr.io/nakatatsu/devcontainer-local:20260308-78f482b
+    image: ghcr.io/nakatatsu/devcontainer-local:20260315-070a55f
     cap_add:
       - NET_ADMIN
       - NET_RAW
@@ -29,7 +29,13 @@ services:
     tmpfs:
       - /tmp
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/health')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost/health')",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
