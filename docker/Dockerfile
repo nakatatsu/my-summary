@@ -1,6 +1,6 @@
-# Multi-target Dockerfile
+# Dockerfile for local development
 # Build context: docker/
-# Usage: docker build --target <target> docker/
+# Usage: docker build --target local docker/
 
 # ============================================================
 # Base (shared across all targets)
@@ -94,102 +94,6 @@ RUN chmod +x /usr/local/bin/init-firewall.sh && \
 USER node
 
 ENV PATH="/home/node/.local/bin:${PATH}"
-
-# ============================================================
-# Infrastructure target
-# ============================================================
-FROM base AS infrastructure
-
-USER root
-
-# Terraform
-RUN ARCH="$(dpkg --print-architecture)" && \
-  wget -q "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
-  unzip "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
-  mv terraform /usr/local/bin/ && rm "terraform_${TERRAFORM_VERSION}_linux_${ARCH}.zip" && \
-  chmod +x /usr/local/bin/terraform
-
-# tflint
-RUN ARCH="$(dpkg --print-architecture)" && \
-  wget -q "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH}.zip" && \
-  unzip "tflint_linux_${ARCH}.zip" && mv tflint /usr/local/bin/ && \
-  rm "tflint_linux_${ARCH}.zip" && chmod +x /usr/local/bin/tflint
-
-# checkov
-RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
-  && apt-get clean && rm -rf /var/lib/apt/lists/* && \
-  pip3 install --no-cache-dir checkov==${CHECKOV_VERSION} --break-system-packages
-
-# terraform-docs
-RUN ARCH="$(dpkg --print-architecture)" && \
-  wget -q "https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
-  tar -xzf "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
-  mv terraform-docs /usr/local/bin/ && rm "terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${ARCH}.tar.gz" && \
-  chmod +x /usr/local/bin/terraform-docs
-
-USER node
-WORKDIR /workspace
-
-LABEL org.opencontainers.image.source="https://github.com/nakatatsu/mynote"
-LABEL org.opencontainers.image.description="Infrastructure CI/CD Image"
-LABEL maintainer="nakatatsu"
-
-# ============================================================
-# Backend target
-# ============================================================
-FROM base AS backend
-
-USER root
-
-# Go
-RUN ARCH=$(dpkg --print-architecture) && \
-  wget -q "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
-  tar -C /usr/local -xzf "go${GO_VERSION}.linux-${ARCH}.tar.gz" && \
-  rm "go${GO_VERSION}.linux-${ARCH}.tar.gz"
-
-ENV PATH=$PATH:/usr/local/go/bin
-ENV GOPATH=/home/node/go
-ENV PATH=$PATH:/home/node/go/bin
-
-RUN mkdir -p /home/node/go/bin && chown -R node:node /home/node/go
-
-USER node
-
-RUN go install mvdan.cc/gofumpt@v${GOFUMPT_VERSION}
-RUN go install golang.org/x/tools/cmd/goimports@v${GOIMPORTS_VERSION}
-RUN go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v${GOLANGCI_LINT_VERSION}
-RUN go install golang.org/x/vuln/cmd/govulncheck@v${GOVULNCHECK_VERSION}
-RUN go install github.com/securego/gosec/v2/cmd/gosec@v${GOSEC_VERSION}
-
-USER root
-
-# osv-scanner
-RUN ARCH=$(dpkg --print-architecture) && \
-  wget -q "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_${ARCH}" -O /usr/local/bin/osv-scanner && \
-  chmod +x /usr/local/bin/osv-scanner
-
-USER node
-WORKDIR /workspace
-
-LABEL org.opencontainers.image.source="https://github.com/nakatatsu/mynote"
-LABEL org.opencontainers.image.description="Backend CI/CD Image"
-LABEL maintainer="nakatatsu"
-
-# ============================================================
-# Frontend target
-# ============================================================
-FROM base AS frontend
-
-USER node
-
-RUN npm install -g next@${NEXTJS_VERSION} react@${REACT_VERSION} react-dom@${REACT_VERSION}
-RUN npm install -g typescript@${TYPESCRIPT_VERSION} eslint@${ESLINT_VERSION} prettier@${PRETTIER_VERSION}
-
-WORKDIR /workspace
-
-LABEL org.opencontainers.image.source="https://github.com/nakatatsu/mynote"
-LABEL org.opencontainers.image.description="Frontend CI/CD Image"
-LABEL maintainer="nakatatsu"
 
 # ============================================================
 # Local Development target (all tools)
