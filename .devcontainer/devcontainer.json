@@ -1,10 +1,8 @@
 {
   "name": "DevContainer Local Development",
-  "image": "ghcr.io/nakatatsu/devcontainer-local:20260308-78f482b",
-  "runArgs": [
-    "--cap-add=NET_ADMIN",
-    "--cap-add=NET_RAW"
-  ],
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -42,19 +40,6 @@
     }
   },
   "remoteUser": "node",
-  "mounts": [
-    "source=devcontainer-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
-    "source=devcontainer-config-${devcontainerId},target=/home/node/.claude,type=volume",
-    "source=devcontainer-codex-${devcontainerId},target=/home/node/.codex,type=volume"
-  ],
-  "containerEnv": {
-    "TZ": "${localEnv:TZ:UTC}"
-  },
-  "remoteEnv": {
-    "GH_TOKEN": "${localEnv:GITHUB_CLAUDECODE_KEY}"
-  },
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
-  "workspaceFolder": "/workspace",
   "postStartCommand": "git config --global --add safe.directory /workspace && sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand"
 }
