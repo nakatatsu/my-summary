@@ -40,6 +40,6 @@
     }
   },
   "remoteUser": "node",
-  "postStartCommand": "git config --global --add safe.directory /workspace && sudo /usr/local/bin/init-firewall.sh",
+  "postStartCommand": "git config --global --add safe.directory /workspace && sudo /usr/local/bin/init-firewall.sh && bash /workspace/.devcontainer/install-claude-plugins.sh",
   "waitFor": "postStartCommand"
 }
