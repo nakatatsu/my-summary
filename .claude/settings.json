@@ -99,7 +99,6 @@
       "Bash(gh api *)",
       "Bash(sudo *)",
       "Bash(rm *)",
-      "Bash(curl *)",
       "Bash(wget *)",
       "Bash(chmod *)",
       "Bash(chown *)"
