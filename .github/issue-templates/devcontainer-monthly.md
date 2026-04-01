@@ -1,13 +1,13 @@
 ## 概要
 
 YYYY-MM DevContainerツールバージョン更新。
-`docker/Dockerfile` の `ENV` に定義された全ツールバージョンを確認し、最新パッチに更新すること。
+`.devcontainer/Dockerfile` の `ENV` に定義された全ツールバージョンを確認し、最新パッチに更新すること。
 
 ---
 
 ## 対象ファイル
 
-- `docker/Dockerfile` — base ステージの `ENV` ブロック
+- `.devcontainer/Dockerfile` — base ステージの `ENV` ブロック
 
 ---
 
@@ -54,4 +54,4 @@ YYYY-MM DevContainerツールバージョン更新。
 
 - `ENV` の値がそのままインストールされること。
 - バージョンは必ず完全形（X.Y.Z）で記載
-- PR validation workflow で全ターゲットのビルド＋ツール検証が通ることを確認
+- ローカルで `docker compose build` が通ることを確認
