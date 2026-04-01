@@ -40,3 +40,31 @@ resource "github_repository_ruleset" "main_branch_protection" {
     }
   }
 }
+
+resource "github_repository_ruleset" "tag_protection" {
+  for_each = var.protected_repositories
+
+  name        = "tag-protection"
+  repository  = each.value
+  target      = "tag"
+  enforcement = "active"
+
+  bypass_actors {
+    actor_id    = 5 # Repository admin
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  conditions {
+    ref_name {
+      include = ["refs/tags/v*"]
+      exclude = []
+    }
+  }
+
+  rules {
+    creation = true
+    update   = true
+    deletion = true
+  }
+}
