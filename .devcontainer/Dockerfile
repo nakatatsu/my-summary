@@ -1,6 +1,6 @@
 # Multi-target Dockerfile
-# Build context: docker/
-# Usage: docker build --target <target> docker/
+# Build context: .devcontainer/
+# Usage: docker build --target <target> .devcontainer/
 
 # ============================================================
 # Base (shared across all targets)
