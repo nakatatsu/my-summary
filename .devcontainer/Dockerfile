@@ -1,6 +1,6 @@
-# Dockerfile for local development
-# Build context: docker/
-# Usage: docker build --target local docker/
+# Multi-target Dockerfile
+# Build context: .devcontainer/
+# Usage: docker build --target <target> .devcontainer/
 
 # ============================================================
 # Base (shared across all targets)

@@ -1,7 +1,7 @@
 services:
   workspace:
     build:
-      context: ../docker
+      context: .
       dockerfile: Dockerfile
       target: local
     cap_add:
