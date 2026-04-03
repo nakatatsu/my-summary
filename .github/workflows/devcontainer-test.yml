@@ -1,4 +1,4 @@
-name: DevContainer Build
+name: DevContainer Test
 
 on:
   pull_request:
@@ -11,5 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build DevContainer image
+      - name: Build Test DevContainer image
         run: docker build --target local .devcontainer/
