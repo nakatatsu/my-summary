@@ -1,0 +1,15 @@
+name: DevContainer Build
+
+on:
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build DevContainer image
+        run: docker build --target local .devcontainer/
