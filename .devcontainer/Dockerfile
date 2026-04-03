@@ -22,27 +22,27 @@ ENV TZ="$TZ" \
     NODE_OPTIONS="--max-old-space-size=4096" \
     CLAUDE_CONFIG_DIR="/home/node/.claude" \
     POWERLEVEL9K_DISABLE_GITSTATUS="true" \
-    AWS_CLI_VERSION=2.33.31 \
-    GIT_DELTA_VERSION=0.18.2 \
+    AWS_CLI_VERSION=2.34.23 \
+    GIT_DELTA_VERSION=0.19.2 \
     ZSH_IN_DOCKER_VERSION=1.2.1 \
-    TERRAFORM_VERSION=1.14.6 \
+    TERRAFORM_VERSION=1.14.8 \
     TFLINT_VERSION=0.61.0 \
-    CHECKOV_VERSION=3.2.507 \
+    CHECKOV_VERSION=3.2.513 \
     TERRAFORM_DOCS_VERSION=0.21.0 \
-    TFLINT_AWS_PLUGIN_VERSION=0.45.0 \
+    TFLINT_AWS_PLUGIN_VERSION=0.46.0 \
     GO_VERSION=1.26.1 \
     GOFUMPT_VERSION=0.9.2 \
-    GOIMPORTS_VERSION=0.42.0 \
-    GOLANGCI_LINT_VERSION=2.9.0 \
+    GOIMPORTS_VERSION=0.43.0 \
+    GOLANGCI_LINT_VERSION=2.11.4 \
     GOVULNCHECK_VERSION=1.1.4 \
-    OSV_SCANNER_VERSION=2.3.3 \
-    GOSEC_VERSION=2.23.0 \
+    OSV_SCANNER_VERSION=2.3.5 \
+    GOSEC_VERSION=2.25.0 \
     REACT_VERSION=19.2.4 \
-    TYPESCRIPT_VERSION=5.9.3 \
-    ESLINT_VERSION=10.0.3 \
+    TYPESCRIPT_VERSION=6.0.2 \
+    ESLINT_VERSION=10.1.0 \
     PRETTIER_VERSION=3.8.1 \
-    NEXTJS_VERSION=16.1.6 \
-    CODEX_VERSION=0.106.0
+    NEXTJS_VERSION=16.2.2 \
+    CODEX_VERSION=0.118.0
 
 # System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -92,6 +92,8 @@ RUN chmod +x /usr/local/bin/init-firewall.sh && \
   echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
   chmod 0440 /etc/sudoers.d/node-firewall
 USER node
+
+RUN git config --global --add safe.directory /workspace
 
 ENV PATH="/home/node/.local/bin:${PATH}"
 
