@@ -1,7 +1,7 @@
-resource "github_repository_ruleset" "main_branch_protection" {
+resource "github_repository_ruleset" "branch_protection" {
   for_each = var.protected_repositories
 
-  name        = "main-branch-protection"
+  name        = "branch-protection"
   repository  = each.value
   target      = "branch"
   enforcement = "active"
@@ -14,7 +14,7 @@ resource "github_repository_ruleset" "main_branch_protection" {
 
   conditions {
     ref_name {
-      include = ["~DEFAULT_BRANCH"]
+      include = ["~DEFAULT_BRANCH", "refs/heads/develop", "refs/heads/release-*", "refs/heads/hotfix-*"]
       exclude = []
     }
   }
@@ -22,7 +22,7 @@ resource "github_repository_ruleset" "main_branch_protection" {
   rules {
     deletion                = true
     non_fast_forward        = true
-    required_linear_history = true
+    required_linear_history = false
 
     pull_request {
       required_approving_review_count   = 1
@@ -36,6 +36,40 @@ resource "github_repository_ruleset" "main_branch_protection" {
 
       required_check {
         context = "ci"
+      }
+    }
+  }
+}
+
+resource "github_repository_ruleset" "code_scanning" {
+  for_each = var.protected_repositories
+
+  name        = "code-scanning"
+  repository  = each.value
+  target      = "branch"
+  enforcement = "active"
+
+  bypass_actors {
+    actor_id    = 5 # Repository admin
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  conditions {
+    ref_name {
+      include = ["~DEFAULT_BRANCH", "refs/heads/develop", "refs/heads/release-*", "refs/heads/hotfix-*"]
+      exclude = []
+    }
+  }
+
+  # Provider Issue #2599 により 422 エラーが発生する可能性あり。
+  # branch-protection と分離し、障害時の影響を局所化する。
+  rules {
+    required_code_scanning {
+      required_code_scanning_tool {
+        tool                      = "CodeQL"
+        alerts_threshold          = "errors"
+        security_alerts_threshold = "high_or_higher"
       }
     }
   }
