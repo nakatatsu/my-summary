@@ -16,7 +16,6 @@ YYYY-MM DevContainerツールバージョン更新。
 ### base
 
 - [ ] Node.js（`FROM node:XX.YY`）
-- [ ] Claude Code（`CLAUDE_CODE_VERSION`）
 - [ ] AWS CLI（`AWS_CLI_VERSION`）
 - [ ] git-delta（`GIT_DELTA_VERSION`）
 - [ ] zsh-in-docker（`ZSH_IN_DOCKER_VERSION`）
