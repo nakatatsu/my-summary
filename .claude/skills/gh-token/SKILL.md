@@ -1,44 +1,50 @@
 ---
 name: gh-token
 description: >
-  Acquire GitHub tokens via the gh-token-sidecar container.
-  Use this skill whenever gh commands fail with auth errors (401, 403, "auth required", "token expired", "bad credentials", etc.).
-  Also use proactively before any GitHub-authenticated operation (gh auth, git push/pull/fetch, GitHub API calls) when credentials may be missing or expired.
-disable-model-invocation: false
+  Retrieve GitHub tokens via the gh-token-sidecar container.
+  Use this skill whenever a gh command fails with an auth error (401, 403, "auth required",
+  "token expired", "bad credentials", etc.). Also use proactively before any Git operation
+  (git push, git pull, git fetch, git clone) or GitHub API operation (gh CLI, GitHub API calls)
+  to ensure authentication is configured.
 ---
 
-# gh-token Skill
+# gh-token — Token Retrieval Skill
 
-This workspace uses a sidecar container (`gh-token-sidecar`) that issues GitHub App installation tokens. Never use a PAT — always obtain tokens through this sidecar.
+This workspace uses a sidecar container (`gh-token-sidecar`) that issues GitHub App
+installation tokens. Always obtain tokens through this sidecar — never use a PAT.
 
-## Obtain a token
+## How to Get a Token
 
 ```bash
-export GH_TOKEN=$(curl -fsS http://gh-token-sidecar/token | jq -r '.token')
+export GH_TOKEN=$(curl -sf http://gh-token-sidecar/token | jq -r '.token')
+gh auth setup-git
 ```
 
-The token is valid for `gh` commands and GitHub API calls within the same shell session.
+After export, `gh` CLI and GitHub API calls in the same shell session will use this token automatically.
+`gh auth setup-git` configures git to use the GitHub CLI credential helper, so `git pull`, `git push`, and `git fetch` also authenticate correctly — without persisting the token in `.git/config`.
 
-## If the sidecar is unresponsive
+## If the Sidecar Is Unresponsive
 
 Check health:
 
 ```bash
-curl -fsS http://gh-token-sidecar/health
+curl -sf http://gh-token-sidecar/health
 ```
 
-If no response, tell the user: "gh-token-sidecar is not responding. Please run `docker compose up gh-token-sidecar`."
+If no response, the sidecar container is likely stopped. Tell the user:
+"gh-token-sidecar is not responding. Please run `docker compose up gh-token-sidecar` to start it."
 
-## Important
+## Important Notes
 
-- Tokens are freshly issued per request (no caching). No need to worry about expiry — just call again.
-- Setting `GH_TOKEN` is sufficient for `gh` CLI auth. `gh auth login` is unnecessary.
-- The `.pem` private key exists only inside the sidecar container. Never attempt to find or read it.
+- Tokens are freshly issued per request (no caching), so expiry is never a concern — just call the endpoint.
+- Setting `GH_TOKEN` is enough — `gh auth login` is not needed.
+- The `.pem` private key exists only inside the sidecar container and is inaccessible from this container. Do not attempt to find or read it.
 
-## When to use
+## When to Use
 
-1. `gh` command fails with an auth error (most common case)
-2. Starting a new shell session before any GitHub operation
-3. Token may have expired (e.g. after a long idle period)
+1. **Before any Git remote operation** (`git push`, `git pull`, `git fetch`, `git clone`) — always run this skill first to set up authentication
+2. A `gh` command fails with an auth error (401, 403, "auth required", "token expired", "bad credentials")
+3. Before GitHub API operations in a new shell session
+4. When a token may have expired (after a long gap)
 
-On auth error: re-acquire the token with this skill, then retry the command.
+On auth error, retrieve a fresh token with this skill first, then retry the command.
