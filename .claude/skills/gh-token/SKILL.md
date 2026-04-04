@@ -16,12 +16,12 @@ installation tokens. Always obtain tokens through this sidecar — never use a P
 ## How to Get a Token
 
 ```bash
-export GH_TOKEN=$(curl -sf http://gh-token-sidecar/token | jq -r '.token')
+TOKEN=$(curl -sf http://gh-token-sidecar/token | jq -r '.token')
+echo "$TOKEN" | gh auth login --with-token
 gh auth setup-git
 ```
 
-After export, `gh` CLI and GitHub API calls in the same shell session will use this token automatically.
-`gh auth setup-git` configures git to use the GitHub CLI credential helper, so `git pull`, `git push`, and `git fetch` also authenticate correctly — without persisting the token in `.git/config`.
+`gh auth login --with-token` registers the token with the gh CLI, then `gh auth setup-git` configures git to use the gh credential helper. This authenticates `gh` CLI, GitHub API calls, and `git push/pull/fetch`.
 
 ## If the Sidecar Is Unresponsive
 
@@ -37,7 +37,7 @@ If no response, the sidecar container is likely stopped. Tell the user:
 ## Important Notes
 
 - Tokens are freshly issued per request (no caching), so expiry is never a concern — just call the endpoint.
-- Setting `GH_TOKEN` is enough — `gh auth login` is not needed.
+- Authentication requires all three steps in order: (1) retrieve the token from the sidecar, (2) `gh auth login --with-token` to register it with the gh CLI, (3) `gh auth setup-git` to configure git's credential helper. Skipping step 2 causes `gh auth setup-git` and `git push` to fail with "not logged in" or "anonymous write access" errors.
 - The `.pem` private key exists only inside the sidecar container and is inaccessible from this container. Do not attempt to find or read it.
 
 ## When to Use
