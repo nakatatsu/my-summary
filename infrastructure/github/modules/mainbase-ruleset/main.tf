@@ -1,14 +1,9 @@
-resource "github_repository_ruleset" "branch_protection" {
-  name        = "main-branch-protection"
+# バイパスなし。緊急時はブレイクグラスで一時的にバイパス許可する運用。
+resource "github_repository_ruleset" "mainbase_branch_protection" {
+  name        = "mainbase-branch-protection"
   repository  = var.repository
   target      = "branch"
   enforcement = "active"
-
-  bypass_actors {
-    actor_id    = 5 # Repository admin
-    actor_type  = "RepositoryRole"
-    bypass_mode = "always"
-  }
 
   conditions {
     ref_name {
@@ -30,4 +25,3 @@ resource "github_repository_ruleset" "branch_protection" {
     }
   }
 }
-
