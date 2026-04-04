@@ -96,9 +96,7 @@
       "Bash(git branch -D*)",
       "Bash(gh repo delete*)",
       "Bash(gh secret *)",
-      "Bash(gh api *)",
       "Bash(sudo *)",
-      "Bash(rm *)",
       "Bash(wget *)",
       "Bash(chmod *)",
       "Bash(chown *)"
