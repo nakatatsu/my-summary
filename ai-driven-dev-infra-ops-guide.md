@@ -21,6 +21,7 @@
 
 - [CI/CD](cicid.md)
 
-## Monitoring
+## Monitoring & Logging
 
 - [Monitoring](monitoring.md)
+- [Logging](logging-management.md)
